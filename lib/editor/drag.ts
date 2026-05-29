@@ -26,7 +26,7 @@ export function useDrag(options: UseDragOptions = {}) {
   const { onStart, onMove, onEnd } = options;
 
   const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLElement>) => {
+    (e: React.PointerEvent<Element>) => {
       originRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
       onStart?.();
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -35,7 +35,7 @@ export function useDrag(options: UseDragOptions = {}) {
   );
 
   const onPointerMove = useCallback(
-    (e: React.PointerEvent<HTMLElement>) => {
+    (e: React.PointerEvent<Element>) => {
       const origin = originRef.current;
       if (!origin || origin.pointerId !== e.pointerId) return;
       onMove?.(e.clientX - origin.x, e.clientY - origin.y);
@@ -44,7 +44,7 @@ export function useDrag(options: UseDragOptions = {}) {
   );
 
   const onPointerUp = useCallback(
-    (e: React.PointerEvent<HTMLElement>) => {
+    (e: React.PointerEvent<Element>) => {
       const origin = originRef.current;
       if (!origin || origin.pointerId !== e.pointerId) return;
       onEnd?.(e.clientX - origin.x, e.clientY - origin.y);
