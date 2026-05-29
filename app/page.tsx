@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Stage } from "@/components/editor/stage";
 import { Circle } from "@/components/editor/circle";
 import { EasingEditor } from "@/components/editor/easing-editor";
 import { Controls } from "@/components/editor/controls";
 import { ExportPanel } from "@/components/editor/export-panel";
+import { useEditorStore } from "@/lib/editor/store";
 
 export default function EditorPage() {
   const [exportOpen, setExportOpen] = useState(false);
+
+  // Apply any persisted project after mount. The store initializes with the
+  // default project so the first client render matches the server; hydrating
+  // here avoids a localStorage-driven hydration mismatch.
+  useEffect(() => {
+    useEditorStore.getState().hydrate();
+  }, []);
 
   return (
     <main className="min-h-screen bg-neutral-100 p-6">
