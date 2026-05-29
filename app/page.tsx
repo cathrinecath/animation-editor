@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Stage } from "@/components/editor/stage";
 import { Circle } from "@/components/editor/circle";
+import { ContainerBox } from "@/components/editor/container-box";
+import { ContainerPanel } from "@/components/editor/container-panel";
 import { EasingEditor } from "@/components/editor/easing-editor";
 import { Controls } from "@/components/editor/controls";
 import { ExportPanel } from "@/components/editor/export-panel";
@@ -33,12 +35,16 @@ export default function EditorPage() {
 
         <div className="flex gap-6 items-start">
           <Stage>
+            <ContainerBox />
             <Circle elementId="circle-1" />
           </Stage>
 
-          <div className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-neutral-900">Easing</h2>
-            <EasingEditor animationId="anim-1" trackIndex={0} />
+          <div className="flex flex-col gap-4">
+            <ContainerPanel animationId="anim-1" />
+            <div className="flex flex-col gap-2">
+              <h2 className="text-sm font-semibold text-neutral-900">Easing</h2>
+              <EasingEditor animationId="anim-1" trackIndex={0} />
+            </div>
           </div>
         </div>
 
