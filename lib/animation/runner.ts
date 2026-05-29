@@ -10,6 +10,7 @@ import { evalCubicBezier } from "./bezier";
 export function runAnimation(
   anim: Animation,
   element: HTMLElement,
+  onDone?: () => void,
 ): () => void {
   let cancelled = false;
 
@@ -31,6 +32,7 @@ export function runAnimation(
     applyTransform(element, t, anim);
 
     if (t < 1) requestAnimationFrame(tick);
+    else onDone?.();
   }
 
   requestAnimationFrame(tick);

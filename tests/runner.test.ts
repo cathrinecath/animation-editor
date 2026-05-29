@@ -75,4 +75,24 @@ describe("runAnimation", () => {
     flushFrame(1100); // past the end
     expect(el.style.transform).toMatch(/translate\(100(\.\d+)?px/);
   });
+
+  it("calls onDone once when the animation completes", () => {
+    const el = document.createElement("div");
+    const onDone = vi.fn();
+    runAnimation(makeAnim(), el, onDone);
+    flushFrame(0);
+    expect(onDone).not.toHaveBeenCalled();
+    flushFrame(1000); // reaches the end
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not call onDone if cancelled before completing", () => {
+    const el = document.createElement("div");
+    const onDone = vi.fn();
+    const cancel = runAnimation(makeAnim(), el, onDone);
+    flushFrame(0);
+    cancel();
+    flushFrame(1000);
+    expect(onDone).not.toHaveBeenCalled();
+  });
 });

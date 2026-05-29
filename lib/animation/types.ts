@@ -46,7 +46,7 @@ export const DEFAULT_PROJECT: Project = {
     {
       id: "circle-1",
       type: "circle",
-      position: { x: 80, y: 200 },
+      position: { x: 380, y: 230 },
       size: { width: 40, height: 40 },
       style: { background: "#6b7280", borderRadius: "9999px" },
     },

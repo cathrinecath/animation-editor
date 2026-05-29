@@ -31,6 +31,9 @@ function saveToStorage(project: Project) {
 type EditorState = {
   project: Project;
   isPlaying: boolean;
+  // Bumped on every play() so pressing Play again restarts the animation even
+  // when isPlaying is already true (e.g. after it has finished).
+  playToken: number;
 
   setTranslateEnd: (animationId: string, x: number, y: number) => void;
   setEasingControl: (
@@ -39,7 +42,12 @@ type EditorState = {
     control: [number, number, number, number],
   ) => void;
   play: () => void;
+  // Full reset: clears the project back to defaults (end position + easing) and
+  // stops playback. This is the Reset button.
   reset: () => void;
+  // Stops playback only, leaving the project untouched. Used when an animation
+  // finishes so the editor returns to its resting view without losing the design.
+  stopPlaying: () => void;
   loadProject: (project: Project) => void;
   hydrate: () => void;
 };
@@ -50,6 +58,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // not read here — reading localStorage at init causes a hydration mismatch.
   project: structuredClone(DEFAULT_PROJECT),
   isPlaying: false,
+  playToken: 0,
 
   setTranslateEnd: (animationId, x, y) => {
     set((state) => {
@@ -78,8 +87,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
 
-  play: () => set({ isPlaying: true }),
-  reset: () => set({ isPlaying: false }),
+  play: () => set((state) => ({ isPlaying: true, playToken: state.playToken + 1 })),
+  reset: () => {
+    const project = structuredClone(DEFAULT_PROJECT);
+    saveToStorage(project);
+    set({ project, isPlaying: false });
+  },
+  stopPlaying: () => set({ isPlaying: false }),
 
   loadProject: (project) => {
     saveToStorage(project);

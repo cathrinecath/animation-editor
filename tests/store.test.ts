@@ -43,6 +43,46 @@ describe("editor store", () => {
     expect(useEditorStore.getState().isPlaying).toBe(false);
   });
 
+  it("reset restores the default project (end + easing) and stops playback", () => {
+    useEditorStore.getState().setTranslateEnd("anim-1", 200, 100);
+    useEditorStore.getState().setEasingControl("anim-1", 0, [0.1, 0.2, 0.3, 0.4]);
+    useEditorStore.getState().play();
+
+    useEditorStore.getState().reset();
+
+    const state = useEditorStore.getState();
+    expect(state.isPlaying).toBe(false);
+    const anim = state.project.animations[0];
+    expect(anim.tracks[0].waypoints[1].value).toBe(0);
+    expect(anim.tracks[1].waypoints[1].value).toBe(0);
+    expect(anim.tracks[0].easing).toEqual({
+      type: "cubic-bezier",
+      control: [0.42, 0, 0.58, 1],
+    });
+  });
+
+  it("stopPlaying stops playback without touching the project", () => {
+    useEditorStore.getState().setTranslateEnd("anim-1", 200, 100);
+    useEditorStore.getState().play();
+
+    useEditorStore.getState().stopPlaying();
+
+    const state = useEditorStore.getState();
+    expect(state.isPlaying).toBe(false);
+    // The design is preserved — only playback stopped.
+    expect(state.project.animations[0].tracks[0].waypoints[1].value).toBe(200);
+  });
+
+  it("increments playToken on each play so the same animation can replay", () => {
+    const t0 = useEditorStore.getState().playToken;
+    useEditorStore.getState().play();
+    const t1 = useEditorStore.getState().playToken;
+    useEditorStore.getState().play();
+    const t2 = useEditorStore.getState().playToken;
+    expect(t1).toBeGreaterThan(t0);
+    expect(t2).toBeGreaterThan(t1);
+  });
+
   it("loadProject replaces the entire project", () => {
     const replacement = structuredClone(DEFAULT_PROJECT);
     replacement.elements[0].position.x = 999;
