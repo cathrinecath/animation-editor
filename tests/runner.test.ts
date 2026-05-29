@@ -86,6 +86,28 @@ describe("runAnimation", () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
+  it("moves in a straight line — both axes share one easing (matches the CSS export)", () => {
+    const el = document.createElement("div");
+    const anim = makeAnim();
+    // A diagonal move: X -> 200, Y -> 100.
+    anim.tracks[0].waypoints[1].value = 200;
+    anim.tracks[1].waypoints[1].value = 100;
+    // Give the two axes DIFFERENT easings. The motion must still be a straight
+    // line, because the export applies one timing function to the whole transform.
+    anim.tracks[0].easing = { type: "cubic-bezier", control: [0.42, 0, 0, 1] };
+    anim.tracks[1].easing = { type: "cubic-bezier", control: [0, 0, 0.58, 1] };
+
+    runAnimation(anim, el);
+    flushFrame(0);
+    flushFrame(500); // mid-animation
+
+    const m = el.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    const x = Number(m![1]);
+    const y = Number(m![2]);
+    // Straight line from (0,0) to (200,100): y must be exactly half of x.
+    expect(y).toBeCloseTo(x / 2, 5);
+  });
+
   it("does not call onDone if cancelled before completing", () => {
     const el = document.createElement("div");
     const onDone = vi.fn();

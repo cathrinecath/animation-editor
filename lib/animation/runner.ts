@@ -1,4 +1,4 @@
-import type { Animation, PropertyTrack } from "./types";
+import type { Animation } from "./types";
 import { interpolateWaypoints } from "./interpolate";
 import { evalCubicBezier } from "./bezier";
 
@@ -48,16 +48,18 @@ function applyTransform(
 ) {
   const tx = anim.tracks.find((t) => t.property === "translateX");
   const ty = anim.tracks.find((t) => t.property === "translateY");
-  const x = tx ? evalTrack(tx, progress) : 0;
-  const y = ty ? evalTrack(ty, progress) : 0;
-  element.style.transform = `translate(${x}px, ${y}px)`;
-}
 
-function evalTrack(track: PropertyTrack, progress: number): number {
-  const easing = track.easing;
+  // Ease the progress ONCE with a single shared easing, then drive both axes
+  // from it. This keeps the motion a straight line from start to end and matches
+  // the CSS export, which applies one timing function to the whole transform.
+  // (Per-axis easing would bow the path and disagree with the exported code.)
+  const easing = tx?.easing ?? ty?.easing;
   const eased =
-    easing.type === "cubic-bezier"
+    easing && easing.type === "cubic-bezier"
       ? evalCubicBezier(easing.control, progress)
       : progress;
-  return interpolateWaypoints(track.waypoints, eased);
+
+  const x = tx ? interpolateWaypoints(tx.waypoints, eased) : 0;
+  const y = ty ? interpolateWaypoints(ty.waypoints, eased) : 0;
+  element.style.transform = `translate(${x}px, ${y}px)`;
 }
