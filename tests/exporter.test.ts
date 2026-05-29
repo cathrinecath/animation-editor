@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { exportProject } from "@/lib/exporter";
+import { exportProject, exportFiles } from "@/lib/exporter";
 import { DEFAULT_PROJECT, type Project } from "@/lib/animation/types";
 
 function makeProject(): Project {
@@ -42,5 +42,52 @@ describe("exportProject (all-in-one)", () => {
     p.animations[0].input = { type: "mount", delay: 0, duration: 1500 };
     const out = exportProject(p);
     expect(out).toContain("1.5s");
+  });
+});
+
+describe("exportFiles", () => {
+  it("single-file mode returns one self-contained Animation.tsx (with inline style)", () => {
+    const files = exportFiles(makeProject(), "single-file");
+    expect(files).toHaveLength(1);
+    expect(files[0].name).toBe("Animation.tsx");
+    expect(files[0].language).toBe("tsx");
+    expect(files[0].code).toContain("export function Animation");
+    expect(files[0].code).toContain("<style>");
+    expect(files[0].code).toContain("@keyframes");
+  });
+
+  it("multi-file mode returns a .tsx component file and a .css file", () => {
+    const files = exportFiles(makeProject(), "multi-file");
+    const names = files.map((f) => f.name);
+    expect(names).toContain("Animation.tsx");
+    expect(names).toContain("animation.css");
+  });
+
+  it("multi-file component imports the css and renders the class, with no inline style", () => {
+    const files = exportFiles(makeProject(), "multi-file");
+    const tsx = files.find((f) => f.name === "Animation.tsx")!;
+    expect(tsx.language).toBe("tsx");
+    expect(tsx.code).toContain('import "./animation.css"');
+    expect(tsx.code).toContain('className="animation-anim"');
+    expect(tsx.code).toContain("export function Animation");
+    expect(tsx.code).not.toContain("<style>");
+    expect(tsx.code).not.toContain("@keyframes");
+  });
+
+  it("multi-file css holds the keyframes, translate values, easing and duration", () => {
+    const p = makeProject();
+    p.animations[0].input = { type: "mount", delay: 0, duration: 1500 };
+    p.animations[0].tracks[0].easing = {
+      type: "cubic-bezier",
+      control: [0.25, 0.1, 0.25, 1],
+    };
+    const files = exportFiles(p, "multi-file");
+    const css = files.find((f) => f.name === "animation.css")!;
+    expect(css.language).toBe("css");
+    expect(css.code).toContain("@keyframes");
+    expect(css.code).toContain("translate(0px, 0px)");
+    expect(css.code).toContain("translate(200px, 0px)");
+    expect(css.code).toContain("cubic-bezier(0.25, 0.1, 0.25, 1)");
+    expect(css.code).toContain("1.5s");
   });
 });
