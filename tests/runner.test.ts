@@ -30,6 +30,7 @@ function makeAnim(): Animation {
   return {
     id: "a",
     elementId: "e",
+    motionUnit: "px",
     input: { type: "mount", delay: 0, duration: 1000 },
     tracks: [
       {

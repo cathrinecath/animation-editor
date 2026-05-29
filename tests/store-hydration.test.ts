@@ -59,4 +59,22 @@ describe("editor store — SSR-safe hydration", () => {
       useEditorStore.getState().project.elements[0].position.x,
     ).toBe(DEFAULT_PROJECT.elements[0].position.x);
   });
+
+  it("hydrate() backfills container and legacy motionUnit on older persisted projects", async () => {
+    vi.resetModules();
+    window.localStorage.clear();
+    const { useEditorStore } = await import("@/lib/editor/store");
+
+    // A pre-feature persisted project: no container, no motionUnit.
+    const legacy = structuredClone(DEFAULT_PROJECT) as unknown as Record<string, unknown>;
+    delete legacy.container;
+    delete (legacy.animations as { motionUnit?: unknown }[])[0].motionUnit;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+
+    useEditorStore.getState().hydrate();
+
+    const project = useEditorStore.getState().project;
+    expect(project.container).toEqual({ width: 400, height: 300 });
+    expect(project.animations[0].motionUnit).toBe("px"); // legacy preserved as px
+  });
 });

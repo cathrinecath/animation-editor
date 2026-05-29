@@ -2,15 +2,17 @@ import type { Project } from "@/lib/animation/types";
 import type { ExportFile } from "./index";
 import {
   ANIM_NAME,
+  PARENT_CLASS,
   durationSec,
   easingString,
   keyframeStatements,
+  parentCss,
 } from "./shared";
 
 /**
  * Emits the animation as separate, project-ready files: a React component that
- * imports a plain CSS file. A utils file is only added when there is shared
- * logic to factor out — there is none for v0's single translate animation.
+ * imports a plain CSS file. The component wraps the user's content in a parent
+ * container so motion can be measured relative to it.
  */
 export function emitMultiFile(project: Project): ExportFile[] {
   if (!project.animations[0]) {
@@ -21,7 +23,9 @@ export function emitMultiFile(project: Project): ExportFile[] {
     .map((s) => `  ${s}`)
     .join("\n");
 
-  const css = `@keyframes ${ANIM_NAME} {
+  const css = `${parentCss(project)}
+
+@keyframes ${ANIM_NAME} {
 ${keyframes}
 }
 
@@ -33,7 +37,11 @@ ${keyframes}
   const component = `import "./animation.css";
 
 export function Animation({ children }: { children?: React.ReactNode }) {
-  return <div className="${ANIM_NAME}">{children}</div>;
+  return (
+    <div className="${PARENT_CLASS}">
+      <div className="${ANIM_NAME}">{children}</div>
+    </div>
+  );
 }
 `;
 

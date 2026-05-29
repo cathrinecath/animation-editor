@@ -1,5 +1,6 @@
 export type Project = {
   schemaVersion: 0;
+  container: { width: number; height: number };
   elements: Element[];
   animations: Animation[];
 };
@@ -17,6 +18,7 @@ export type ElementType = "circle";
 export type Animation = {
   id: string;
   elementId: string;
+  motionUnit: MotionUnit;
   input: AnimationInput;
   tracks: PropertyTrack[];
 };
@@ -40,8 +42,18 @@ export type Waypoint = {
 export type Easing =
   | { type: "cubic-bezier"; control: [number, number, number, number] };
 
+/**
+ * How exported motion is measured.
+ * - "container": travel scales with the parent (exported as cqw/cqh).
+ * - "px": travel is a fixed pixel distance (exported as px).
+ * Stored waypoint values are ALWAYS px regardless of this flag; it only changes
+ * the unit the exporter emits and how the store scales px on a container resize.
+ */
+export type MotionUnit = "container" | "px";
+
 export const DEFAULT_PROJECT: Project = {
   schemaVersion: 0,
+  container: { width: 400, height: 300 },
   elements: [
     {
       id: "circle-1",
@@ -55,6 +67,7 @@ export const DEFAULT_PROJECT: Project = {
     {
       id: "anim-1",
       elementId: "circle-1",
+      motionUnit: "container",
       input: { type: "mount", delay: 0, duration: 1000 },
       tracks: [
         {
