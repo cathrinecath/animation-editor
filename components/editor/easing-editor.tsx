@@ -45,12 +45,12 @@ export function EasingEditor({ animationId, trackIndex }: EasingEditorProps) {
         viewBox={`0 0 ${GRAPH_SIZE} ${GRAPH_SIZE}`}
         width={GRAPH_SIZE}
         height={GRAPH_SIZE}
-        style={{ background: "#fafafa", border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ background: "#171717", border: "1px solid #404040", borderRadius: 4 }}
       >
-        <line x1={0} y1={GRAPH_SIZE} x2={GRAPH_SIZE} y2={0} stroke="#d1d5db" strokeDasharray="3 3" />
+        <line x1={0} y1={GRAPH_SIZE} x2={GRAPH_SIZE} y2={0} stroke="#525252" strokeDasharray="3 3" />
         <path
           d={`M 0 ${GRAPH_SIZE} C ${x1 * GRAPH_SIZE} ${(1 - y1) * GRAPH_SIZE}, ${x2 * GRAPH_SIZE} ${(1 - y2) * GRAPH_SIZE}, ${GRAPH_SIZE} 0`}
-          stroke="#3b82f6"
+          stroke="#60a5fa"
           strokeWidth={2}
           fill="none"
         />
@@ -71,7 +71,7 @@ export function EasingEditor({ animationId, trackIndex }: EasingEditorProps) {
       </svg>
       <div
         data-testid="easing-inputs"
-        className="flex flex-col gap-3 text-xs text-neutral-700"
+        className="flex flex-col gap-3 text-xs text-neutral-200"
       >
         <ControlPointInputs
           label="Control point 1"
@@ -124,7 +124,7 @@ function ControlPoint({ testid, label, x, y, onMove }: ControlPointProps) {
   const labelY = y > 24 ? y - 12 : y + 20;
   return (
     <g data-testid={testid} style={{ cursor: "grab", touchAction: "none" }} {...handlers}>
-      <circle cx={x} cy={y} r={6} fill="#3b82f6" />
+      <circle cx={x} cy={y} r={6} fill="#60a5fa" />
       <text
         x={x}
         y={labelY}
@@ -132,7 +132,7 @@ function ControlPoint({ testid, label, x, y, onMove }: ControlPointProps) {
         dominantBaseline="central"
         fontSize={11}
         fontWeight={600}
-        fill="#1d4ed8"
+        fill="#93c5fd"
         style={{ pointerEvents: "none", userSelect: "none" }}
       >
         {label}
@@ -162,7 +162,7 @@ function ControlPointInputs({
 }: ControlPointInputsProps) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-neutral-500">{label}</span>
+      <span className="text-neutral-300">{label}</span>
       <div className="flex gap-3">
         <label className="flex items-center gap-1">
           <span className="text-neutral-400">X</span>
@@ -174,7 +174,7 @@ function ControlPointInputs({
             min={0}
             max={1}
             step={0.01}
-            className="w-12 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-12 px-1 py-0.5 border border-neutral-600 bg-neutral-900 text-neutral-100 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </label>
         <label className="flex items-center gap-1">
@@ -187,7 +187,7 @@ function ControlPointInputs({
             min={0}
             max={1}
             step={0.01}
-            className="w-12 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-12 px-1 py-0.5 border border-neutral-600 bg-neutral-900 text-neutral-100 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </label>
       </div>

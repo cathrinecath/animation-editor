@@ -21,8 +21,8 @@ export function ContainerPanel({ animationId }: ContainerPanelProps) {
   const unit = motionUnit ?? "container";
 
   return (
-    <div data-testid="container-panel" className="flex flex-col gap-3 text-xs text-neutral-700">
-      <h2 className="text-sm font-semibold text-neutral-900">Container</h2>
+    <div data-testid="container-panel" className="flex flex-col gap-3 text-xs text-neutral-200">
+      <h2 className="text-sm font-semibold text-neutral-100">Container</h2>
 
       <div className="flex gap-3">
         <label className="flex items-center gap-1">
@@ -56,8 +56,8 @@ export function ContainerPanel({ animationId }: ContainerPanelProps) {
       />
       <p className="text-neutral-400">
         {unit === "container"
-          ? "Motion scales with the container (cqw/cqh)."
-          : "Motion is a fixed pixel size (px)."}
+          ? "Motion scales with the frame — resize the frame and the animation scales to match."
+          : "Motion stays a fixed size — the frame size doesn't affect it."}
       </p>
     </div>
   );

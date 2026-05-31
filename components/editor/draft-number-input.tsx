@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const DEFAULT_CLASS =
-  "w-16 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500";
+  "w-16 px-1 py-0.5 border border-neutral-600 bg-neutral-900 text-neutral-100 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500";
 
 type DraftNumberInputProps = {
   testid: string;
