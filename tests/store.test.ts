@@ -120,4 +120,17 @@ describe("editor store", () => {
     expect(anim.tracks[0].waypoints[1].value).toBe(200);
     expect(anim.tracks[1].waypoints[1].value).toBe(150);
   });
+
+  it("setDuration updates the mount input duration (ms) and persists", () => {
+    useEditorStore.getState().setDuration("anim-1", 2500);
+    const anim = useEditorStore.getState().project.animations[0];
+    expect(anim.input.type).toBe("mount");
+    if (anim.input.type === "mount") expect(anim.input.duration).toBe(2500);
+  });
+
+  it("setDuration ignores an unknown animation id", () => {
+    const before = structuredClone(useEditorStore.getState().project);
+    useEditorStore.getState().setDuration("nope", 9999);
+    expect(useEditorStore.getState().project).toEqual(before);
+  });
 });

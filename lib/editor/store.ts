@@ -56,6 +56,7 @@ type EditorState = {
   ) => void;
   setContainerSize: (width: number, height: number) => void;
   setMotionUnit: (animationId: string, unit: MotionUnit) => void;
+  setDuration: (animationId: string, durationMs: number) => void;
   play: () => void;
   // Full reset: clears the project back to defaults (end position + easing) and
   // stops playback. This is the Reset button.
@@ -130,6 +131,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const anim = project.animations.find((a) => a.id === animationId);
       if (!anim) return state;
       anim.motionUnit = unit;
+      saveToStorage(project);
+      return { project };
+    });
+  },
+
+  setDuration: (animationId, durationMs) => {
+    set((state) => {
+      const project = structuredClone(state.project);
+      const anim = project.animations.find((a) => a.id === animationId);
+      if (!anim || anim.input.type !== "mount") return state;
+      anim.input.duration = durationMs;
       saveToStorage(project);
       return { project };
     });
