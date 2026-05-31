@@ -1,9 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/lib/editor/store";
-
-const STAGE_WIDTH = 800;
-const STAGE_HEIGHT = 500;
+import { STAGE_WIDTH, STAGE_HEIGHT } from "@/lib/editor/stage-dimensions";
 
 /**
  * The visible reference frame for motion: the exported container, drawn centered
