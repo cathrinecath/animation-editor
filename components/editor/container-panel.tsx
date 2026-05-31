@@ -2,6 +2,7 @@
 
 import { useEditorStore } from "@/lib/editor/store";
 import { DraftNumberInput } from "./draft-number-input";
+import { ModeToggle } from "./mode-toggle";
 
 type ContainerPanelProps = {
   animationId: string;
@@ -45,50 +46,19 @@ export function ContainerPanel({ animationId }: ContainerPanelProps) {
         </label>
       </div>
 
-      <div className="flex gap-2">
-        <ModeButton
-          label="Responsive"
-          active={unit === "container"}
-          onClick={() => setMotionUnit(animationId, "container")}
-        />
-        <ModeButton
-          label="Fixed"
-          active={unit === "px"}
-          onClick={() => setMotionUnit(animationId, "px")}
-        />
-      </div>
+      <ModeToggle
+        options={[
+          { value: "container", label: "Responsive" },
+          { value: "px", label: "Fixed" },
+        ]}
+        value={unit}
+        onChange={(v) => setMotionUnit(animationId, v as "container" | "px")}
+      />
       <p className="text-neutral-400">
         {unit === "container"
           ? "Motion scales with the container (cqw/cqh)."
           : "Motion is a fixed pixel size (px)."}
       </p>
     </div>
-  );
-}
-
-// ── ModeButton ─────────────────────────────────────────────────────────────────
-
-type ModeButtonProps = {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-};
-
-function ModeButton({ label, active, onClick }: ModeButtonProps) {
-  return (
-    // Fix 3: type="button" prevents accidental form submission
-    // Fix 4: aria-pressed for toggle accessibility
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={
-        active
-          ? "px-3 py-1 rounded bg-blue-600 text-white"
-          : "px-3 py-1 rounded border border-neutral-300 hover:bg-neutral-100"
-      }
-    >
-      {label}
-    </button>
   );
 }
