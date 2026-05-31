@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "@/lib/editor/store";
+import { DraftNumberInput } from "./draft-number-input";
 
 type ContainerPanelProps = {
   animationId: string;
@@ -27,18 +27,20 @@ export function ContainerPanel({ animationId }: ContainerPanelProps) {
         <label className="flex items-center gap-1">
           <span className="text-neutral-400">W</span>
           {/* Fix 1: draft-state input — commits to store on blur only */}
-          <SizeInput
+          <DraftNumberInput
             testid="container-width"
-            storeValue={container.width}
+            value={container.width}
             onCommit={(v) => setContainerSize(v, container.height)}
+            min={1}
           />
         </label>
         <label className="flex items-center gap-1">
           <span className="text-neutral-400">H</span>
-          <SizeInput
+          <DraftNumberInput
             testid="container-height"
-            storeValue={container.height}
+            value={container.height}
             onCommit={(v) => setContainerSize(container.width, v)}
+            min={1}
           />
         </label>
       </div>
@@ -61,62 +63,6 @@ export function ContainerPanel({ animationId }: ContainerPanelProps) {
           : "Motion is a fixed pixel size (px)."}
       </p>
     </div>
-  );
-}
-
-// ── SizeInput ──────────────────────────────────────────────────────────────────
-// Mirrors the BezierInput pattern from easing-editor.tsx:
-//   • local string draft for in-progress typing
-//   • syncs from store value while not focused (via focusedRef + useEffect)
-//   • commits to store on blur (and on Enter keydown)
-//   • on commit: if blank/NaN → revert draft to store value; else clamp ≥1
-
-type SizeInputProps = {
-  testid: string;
-  storeValue: number;
-  onCommit: (value: number) => void;
-};
-
-function SizeInput({ testid, storeValue, onCommit }: SizeInputProps) {
-  const [draft, setDraft] = useState(() => String(storeValue));
-  const focusedRef = useRef(false);
-
-  // Sync the displayed draft from the store whenever the store changes, but not
-  // while the field is focused — same guard BezierInput uses so an in-progress
-  // entry like "60" isn't clobbered mid-type.
-  useEffect(() => {
-    if (!focusedRef.current) setDraft(String(storeValue));
-  }, [storeValue]);
-
-  const commit = () => {
-    focusedRef.current = false;
-    const parsed = Number(draft);
-    if (draft.trim() === "" || Number.isNaN(parsed)) {
-      // Revert to current store value — don't write invalid input.
-      setDraft(String(storeValue));
-      return;
-    }
-    const clamped = Math.max(1, parsed);
-    setDraft(String(clamped));
-    onCommit(clamped);
-  };
-
-  return (
-    <input
-      data-testid={testid}
-      type="number"
-      min={1}
-      value={draft}
-      onFocus={() => {
-        focusedRef.current = true;
-      }}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") commit();
-      }}
-      onChange={(e) => setDraft(e.target.value)}
-      className="w-16 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
   );
 }
 

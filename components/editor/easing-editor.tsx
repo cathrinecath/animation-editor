@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useEditorStore } from "@/lib/editor/store";
 import { useDrag } from "@/lib/editor/drag";
+import { DraftNumberInput } from "./draft-number-input";
 
 const GRAPH_SIZE = 200;
 
@@ -165,59 +166,32 @@ function ControlPointInputs({
       <div className="flex gap-3">
         <label className="flex items-center gap-1">
           <span className="text-neutral-400">X</span>
-          <BezierInput testid={xTestid} value={x} onCommit={onCommitX} />
+          <DraftNumberInput
+            testid={xTestid}
+            value={x}
+            onCommit={onCommitX}
+            commitMode="change"
+            min={0}
+            max={1}
+            step={0.01}
+            className="w-12 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
         </label>
         <label className="flex items-center gap-1">
           <span className="text-neutral-400">Y</span>
-          <BezierInput testid={yTestid} value={y} onCommit={onCommitY} />
+          <DraftNumberInput
+            testid={yTestid}
+            value={y}
+            onCommit={onCommitY}
+            commitMode="change"
+            min={0}
+            max={1}
+            step={0.01}
+            className="w-12 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
         </label>
       </div>
     </div>
-  );
-}
-
-type BezierInputProps = {
-  testid: string;
-  value: number;
-  onCommit: (value: number) => void;
-};
-
-function BezierInput({ testid, value, onCommit }: BezierInputProps) {
-  const [text, setText] = useState(() => String(value));
-  const focusedRef = useRef(false);
-
-  // Sync the displayed text from the store (e.g. when the diagram is dragged),
-  // but not while the field is focused — otherwise an in-progress entry like
-  // "0." would be clobbered back to "0" before the user finishes typing.
-  useEffect(() => {
-    if (!focusedRef.current) setText(String(value));
-  }, [value]);
-
-  return (
-    <input
-      data-testid={testid}
-      type="number"
-      step={0.01}
-      min={0}
-      max={1}
-      value={text}
-      onFocus={() => {
-        focusedRef.current = true;
-      }}
-      onBlur={() => {
-        focusedRef.current = false;
-        setText(String(value));
-      }}
-      onChange={(e) => {
-        const raw = e.target.value;
-        setText(raw);
-        if (raw.trim() === "") return;
-        const parsed = Number(raw);
-        if (Number.isNaN(parsed)) return;
-        onCommit(parsed);
-      }}
-      className="w-12 px-1 py-0.5 border border-neutral-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
-    />
   );
 }
 
