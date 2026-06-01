@@ -119,4 +119,57 @@ describe("runAnimation", () => {
     flushFrame(1000);
     expect(onDone).not.toHaveBeenCalled();
   });
+
+  it("loops position back to start on the second iteration (Loop)", () => {
+    const anim = makeAnim();
+    anim.repeat = { enabled: true, mode: "loop", times: "infinite" };
+    const el = document.createElement("div");
+    runAnimation(anim, el);
+    flushFrame(0);     // progress 0 -> 0px
+    flushFrame(1000);  // exactly one full iteration -> back to start (local 0)
+    expect(el.style.transform).toContain("translate(0px, 0px)");
+  });
+
+  it("reverses on the second iteration (Bounce)", () => {
+    const anim = makeAnim();
+    anim.repeat = { enabled: true, mode: "bounce", times: "infinite" };
+    const el = document.createElement("div");
+    runAnimation(anim, el);
+    flushFrame(0);
+    flushFrame(1500); // iter 1 (odd), local 0.5 -> reversed progress 0.5 -> 50px
+    expect(el.style.transform).toContain("translate(50px, 0px)");
+  });
+
+  it("calls onDone after a finite repeat count", () => {
+    const anim = makeAnim();
+    anim.repeat = { enabled: true, mode: "loop", times: 2 };
+    const el = document.createElement("div");
+    let done = false;
+    runAnimation(anim, el, () => (done = true));
+    flushFrame(0);
+    flushFrame(2000); // elapsed = 2 * duration -> iter 2 >= times -> done
+    expect(done).toBe(true);
+  });
+
+  it("Bounce with an odd finite count settles at the forward end (progress 1)", () => {
+    const anim = makeAnim();
+    anim.repeat = { enabled: true, mode: "bounce", times: 1 };
+    const el = document.createElement("div");
+    let done = false;
+    runAnimation(anim, el, () => (done = true));
+    flushFrame(0);
+    flushFrame(1000); // iter 1 >= times 1 -> finished; odd count -> ends forward
+    expect(el.style.transform).toContain("translate(100px, 0px)");
+    expect(done).toBe(true);
+  });
+
+  it("Bounce with an even finite count settles at the reverse end (progress 0)", () => {
+    const anim = makeAnim();
+    anim.repeat = { enabled: true, mode: "bounce", times: 2 };
+    const el = document.createElement("div");
+    runAnimation(anim, el);
+    flushFrame(0);
+    flushFrame(2000); // iter 2 >= times 2 -> finished; even count -> ends reversed
+    expect(el.style.transform).toContain("translate(0px, 0px)");
+  });
 });

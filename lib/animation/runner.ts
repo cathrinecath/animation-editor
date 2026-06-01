@@ -1,11 +1,11 @@
 import type { Animation } from "./types";
-import { interpolateWaypoints } from "./interpolate";
-import { evalCubicBezier } from "./bezier";
+import { computeTransform, transformString } from "./transform";
 
 /**
- * Plays a single animation on a given DOM element. v0 supports only the
- * `mount` input type — when called, starts immediately (plus `delay`) and
- * runs for `duration`. Returns a cancel function.
+ * Plays a single animation on a DOM element. v0 input type is `mount` — starts
+ * after `delay`, runs for `duration`. With `repeat.enabled` it loops (Loop =
+ * restart, Bounce = alternate), finitely (`times`) or forever (`"infinite"`).
+ * Returns a cancel function.
  */
 export function runAnimation(
   anim: Animation,
@@ -17,20 +17,44 @@ export function runAnimation(
   const start = performance.now();
   const delay = anim.input.type === "mount" ? anim.input.delay : 0;
   const duration = anim.input.type === "mount" ? anim.input.duration : 1000;
+  const repeat = anim.repeat;
+
+  function apply(progress: number) {
+    element.style.transform = transformString(computeTransform(anim, progress));
+  }
 
   function tick(now: number) {
     if (cancelled) return;
     const elapsed = now - start - delay;
 
     if (elapsed < 0) {
-      applyTransform(element, 0, anim);
+      apply(0);
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    if (repeat.enabled) {
+      const iter = Math.floor(elapsed / duration);
+      const finished = repeat.times !== "infinite" && iter >= repeat.times;
+      if (finished) {
+        // Settle on the last completed iteration's end frame. With alternate
+        // (Bounce), an ODD count ends on a forward pass (progress 1); an EVEN
+        // count ends on a reverse pass (progress 0). Loop always ends at 1.
+        // This matches CSS `alternate ... forwards`, keeping preview == export.
+        const endsReversed = repeat.mode === "bounce" && (repeat.times as number) % 2 === 0;
+        apply(endsReversed ? 0 : 1);
+        onDone?.();
+        return;
+      }
+      const local = (elapsed % duration) / duration;
+      const reversed = repeat.mode === "bounce" && iter % 2 === 1;
+      apply(reversed ? 1 - local : local);
       requestAnimationFrame(tick);
       return;
     }
 
     const t = Math.min(elapsed / duration, 1);
-    applyTransform(element, t, anim);
-
+    apply(t);
     if (t < 1) requestAnimationFrame(tick);
     else onDone?.();
   }
@@ -39,27 +63,4 @@ export function runAnimation(
   return () => {
     cancelled = true;
   };
-}
-
-function applyTransform(
-  element: HTMLElement,
-  progress: number,
-  anim: Animation,
-) {
-  const tx = anim.tracks.find((t) => t.property === "translateX");
-  const ty = anim.tracks.find((t) => t.property === "translateY");
-
-  // Ease the progress ONCE with a single shared easing, then drive both axes
-  // from it. This keeps the motion a straight line from start to end and matches
-  // the CSS export, which applies one timing function to the whole transform.
-  // (Per-axis easing would bow the path and disagree with the exported code.)
-  const easing = tx?.easing ?? ty?.easing;
-  const eased =
-    easing && easing.type === "cubic-bezier"
-      ? evalCubicBezier(easing.control, progress)
-      : progress;
-
-  const x = tx ? interpolateWaypoints(tx.waypoints, eased) : 0;
-  const y = ty ? interpolateWaypoints(ty.waypoints, eased) : 0;
-  element.style.transform = `translate(${x}px, ${y}px)`;
 }
