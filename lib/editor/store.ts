@@ -1,8 +1,12 @@
 import { create } from "zustand";
 import {
   DEFAULT_PROJECT,
+  DEFAULT_REPEAT,
+  DEFAULT_SHAKE,
   type MotionUnit,
   type Project,
+  type Repeat,
+  type Shake,
 } from "@/lib/animation/types";
 
 const STORAGE_KEY = "animation-editor:project:v0";
@@ -28,6 +32,7 @@ function normalizeProject(project: Project): Project {
   if (!next.container) next.container = { width: 400, height: 300 };
   for (const anim of next.animations) {
     if (!anim.motionUnit) anim.motionUnit = "px";
+    if (!anim.repeat) anim.repeat = { ...DEFAULT_REPEAT };
   }
   return next;
 }
@@ -57,6 +62,8 @@ type EditorState = {
   setContainerSize: (width: number, height: number) => void;
   setMotionUnit: (animationId: string, unit: MotionUnit) => void;
   setDuration: (animationId: string, durationMs: number) => void;
+  setShake: (animationId: string, patch: Partial<Shake>) => void;
+  setRepeat: (animationId: string, patch: Partial<Repeat>) => void;
   play: () => void;
   // Full reset: clears the project back to defaults (end position + easing) and
   // stops playback. This is the Reset button.
@@ -142,6 +149,28 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const anim = project.animations.find((a) => a.id === animationId);
       if (!anim || anim.input.type !== "mount") return state;
       anim.input.duration = durationMs;
+      saveToStorage(project);
+      return { project };
+    });
+  },
+
+  setShake: (animationId, patch) => {
+    set((state) => {
+      const project = structuredClone(state.project);
+      const anim = project.animations.find((a) => a.id === animationId);
+      if (!anim) return state;
+      anim.shake = { ...(anim.shake ?? DEFAULT_SHAKE), ...patch };
+      saveToStorage(project);
+      return { project };
+    });
+  },
+
+  setRepeat: (animationId, patch) => {
+    set((state) => {
+      const project = structuredClone(state.project);
+      const anim = project.animations.find((a) => a.id === animationId);
+      if (!anim) return state;
+      anim.repeat = { ...(anim.repeat ?? DEFAULT_REPEAT), ...patch };
       saveToStorage(project);
       return { project };
     });

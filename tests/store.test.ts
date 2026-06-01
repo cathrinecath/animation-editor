@@ -133,4 +133,19 @@ describe("editor store", () => {
     useEditorStore.getState().setDuration("nope", 9999);
     expect(useEditorStore.getState().project).toEqual(before);
   });
+
+  it("initializes shake from defaults and merges patches via setShake", () => {
+    useEditorStore.getState().setShake("anim-1", { amplitudeX: 12 });
+    const shake = useEditorStore.getState().project.animations[0].shake;
+    expect(shake).toBeDefined();
+    expect(shake?.amplitudeX).toBe(12);
+    expect(shake?.amplitudeY).toBe(0);       // from DEFAULT_SHAKE
+    expect(shake?.frequency).toBe(3);        // from DEFAULT_SHAKE
+  });
+
+  it("merges patches into repeat via setRepeat without losing other fields", () => {
+    useEditorStore.getState().setRepeat("anim-1", { enabled: true, mode: "bounce" });
+    const repeat = useEditorStore.getState().project.animations[0].repeat;
+    expect(repeat).toEqual({ enabled: true, mode: "bounce", times: "infinite" });
+  });
 });
