@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { exportProject, exportFiles } from "@/lib/exporter";
+import {
+  shakeActive,
+  keyframeBlock,
+  timingFunction,
+  animationShorthand,
+} from "@/lib/exporter/shared";
 import { DEFAULT_PROJECT, type Project } from "@/lib/animation/types";
 
 // Default project is container mode, container 400x300. X=200 -> 50cqw, Y=0 -> 0cqh.
@@ -112,5 +118,53 @@ describe("exportFiles", () => {
     expect(css.code).toContain("translate(50cqw, 0cqh)");
     expect(css.code).toContain("cubic-bezier(0.25, 0.1, 0.25, 1)");
     expect(css.code).toContain("1.5s");
+  });
+});
+
+describe("shake & repeat export helpers", () => {
+  it("shakeActive is false when shake is absent or all-zero", () => {
+    const p = makePxProject();
+    expect(shakeActive(p)).toBe(false);
+    p.animations[0].shake = { amplitudeX: 0, amplitudeY: 0, amplitudeRotate: 0, frequency: 3, decay: 0 };
+    expect(shakeActive(p)).toBe(false);
+    p.animations[0].shake.amplitudeX = 4;
+    expect(shakeActive(p)).toBe(true);
+  });
+
+  it("timingFunction is linear when shake is active, cubic-bezier otherwise", () => {
+    const p = makePxProject();
+    expect(timingFunction(p)).toContain("cubic-bezier");
+    p.animations[0].shake = { amplitudeX: 5, amplitudeY: 0, amplitudeRotate: 0, frequency: 2, decay: 0 };
+    expect(timingFunction(p)).toBe("linear");
+  });
+
+  it("keyframeBlock bakes many lines (with a 100% line) when shake is active", () => {
+    const p = makePxProject();
+    expect(keyframeBlock(p).length).toBe(2); // unchanged 2-waypoint path
+    p.animations[0].shake = { amplitudeX: 5, amplitudeY: 0, amplitudeRotate: 0, frequency: 2, decay: 0 };
+    const lines = keyframeBlock(p);
+    expect(lines.length).toBeGreaterThan(2);
+    expect(lines[lines.length - 1]).toContain("100%");
+  });
+
+  it("animationShorthand omits repeat tokens when disabled and is byte-identical to today", () => {
+    const p = makePxProject();
+    expect(animationShorthand(p)).toBe("animation-anim 1s cubic-bezier(0.42, 0, 0.58, 1) forwards");
+  });
+
+  it("animationShorthand emits infinite + alternate for Bounce forever", () => {
+    const p = makePxProject();
+    p.animations[0].repeat = { enabled: true, mode: "bounce", times: "infinite" };
+    expect(animationShorthand(p)).toBe(
+      "animation-anim 1s cubic-bezier(0.42, 0, 0.58, 1) infinite alternate forwards",
+    );
+  });
+
+  it("animationShorthand emits a finite count for Loop", () => {
+    const p = makePxProject();
+    p.animations[0].repeat = { enabled: true, mode: "loop", times: 3 };
+    expect(animationShorthand(p)).toBe(
+      "animation-anim 1s cubic-bezier(0.42, 0, 0.58, 1) 3 forwards",
+    );
   });
 });

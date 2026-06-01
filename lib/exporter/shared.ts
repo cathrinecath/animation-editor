@@ -1,4 +1,6 @@
 import type { MotionUnit, Project, PropertyTrack, Waypoint } from "@/lib/animation/types";
+import type { Animation } from "@/lib/animation/types";
+import { computeTransform } from "@/lib/animation/transform";
 
 /** The generated @keyframes name and matching CSS class, shared by both export modes. */
 export const ANIM_NAME = "animation-anim";
@@ -107,4 +109,75 @@ function pick(track: PropertyTrack | undefined): Waypoint[] | undefined {
 
 function round3(n: number): number {
   return Math.round(n * 1000) / 1000;
+}
+
+/** Sampling resolution for baked shake: >=16 samples per oscillation, bounded. */
+const SAMPLES_PER_OSC = 16;
+const MIN_STEPS = 24;
+const MAX_STEPS = 120;
+
+/** True when the animation has a shake with any nonzero amplitude. */
+export function shakeActive(project: Project): boolean {
+  const s = project.animations[0]?.shake;
+  return !!s && (s.amplitudeX !== 0 || s.amplitudeY !== 0 || s.amplitudeRotate !== 0);
+}
+
+/** CSS timing function — linear when shake is baked, else the cubic-bezier. */
+export function timingFunction(project: Project): string {
+  return shakeActive(project) ? "linear" : easingString(project);
+}
+
+/**
+ * The keyframe statement lines. Shake inactive ⇒ today's 2-waypoint path.
+ * Shake active ⇒ baked: sample computeTransform at fixed % steps so the export
+ * reproduces the preview exactly (same function drives both).
+ */
+export function keyframeBlock(project: Project): string[] {
+  if (!shakeActive(project)) return keyframeStatements(project);
+
+  const anim = project.animations[0] as Animation;
+  const unit: MotionUnit = anim.motionUnit ?? "px";
+  const freq = anim.shake?.frequency ?? 0;
+  const steps = Math.min(
+    MAX_STEPS,
+    Math.max(MIN_STEPS, Math.ceil(freq * SAMPLES_PER_OSC)),
+  );
+
+  const lines: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const progress = i / steps;
+    const { x, y, rotate } = computeTransform(anim, progress);
+    const pct = Math.round(progress * 100);
+    const xL = cssLength(x, unit, "x", project.container);
+    const yL = cssLength(y, unit, "y", project.container);
+    const rot = rotate !== 0 ? ` rotate(${round3(rotate)}deg)` : "";
+    lines.push(`${pct}% { transform: translate(${xL}, ${yL})${rot}; }`);
+  }
+  return lines;
+}
+
+/**
+ * The full `animation:` shorthand value. Repeat disabled ⇒ no iteration/direction
+ * tokens (byte-identical to the original output). Loop ⇒ count/infinite; Bounce ⇒
+ * count/infinite + alternate.
+ */
+export function animationShorthand(project: Project): string {
+  const repeat = project.animations[0]?.repeat;
+  const iterations =
+    repeat?.enabled
+      ? repeat.times === "infinite"
+        ? "infinite"
+        : String(repeat.times)
+      : "";
+  const direction = repeat?.enabled && repeat.mode === "bounce" ? "alternate" : "";
+  return [
+    ANIM_NAME,
+    `${durationSec(project)}s`,
+    timingFunction(project),
+    iterations,
+    direction,
+    "forwards",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
