@@ -12,12 +12,15 @@ describe("AnimationInspector", () => {
     });
   });
 
-  it("renders Easing and Duration sections plus coming-soon placeholders", () => {
-    const { getByText } = render(<AnimationInspector animationId="anim-1" />);
+  it("renders Easing, Duration, Shake, and Repeat sections; Stagger stays coming-soon", () => {
+    const { getByText, getByTestId } = render(<AnimationInspector animationId="anim-1" />);
     expect(getByText("Easing")).toBeTruthy();
     expect(getByText("Duration")).toBeTruthy();
-    expect(getByText("Stagger")).toBeTruthy();
     expect(getByText("Shake")).toBeTruthy();
+    expect(getByText("Repeat")).toBeTruthy();
+    expect(getByText("Stagger")).toBeTruthy();
+    // Shake is now an interactive section, not a placeholder:
+    expect(getByTestId("shake-x")).toBeTruthy();
   });
 
   it("shows the duration in seconds and writes ms back to the store on blur", () => {

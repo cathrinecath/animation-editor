@@ -5,6 +5,8 @@ import { useEditorStore } from "@/lib/editor/store";
 import { Section } from "./section";
 import { EasingEditor } from "./easing-editor";
 import { DraftNumberInput } from "./draft-number-input";
+import { ShakeSection } from "./shake-section";
+import { RepeatSection } from "./repeat-section";
 
 const MIN_DURATION_SEC = 0.1;
 
@@ -46,9 +48,19 @@ const SECTIONS: { key: string; title: string; render: (animationId: string) => R
     title: "Duration",
     render: (id) => <DurationControl animationId={id} />,
   },
+  {
+    key: "shake",
+    title: "Shake",
+    render: (id) => <ShakeSection animationId={id} />,
+  },
+  {
+    key: "repeat",
+    title: "Repeat",
+    render: (id) => <RepeatSection animationId={id} />,
+  },
 ];
 
-const COMING_SOON = ["Stagger", "Shake"];
+const COMING_SOON = ["Stagger"];
 
 type AnimationInspectorProps = {
   animationId: string;
