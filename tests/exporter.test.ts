@@ -41,7 +41,17 @@ describe("exportProject (all-in-one)", () => {
     expect(out).toContain("translate(0cqw, 0cqh)");
     expect(out).toContain("translate(50cqw, 0cqh)");
     expect(out).toContain("container-type: size");
-    expect(out).toContain("aspect-ratio: 400 / 300");
+    expect(out).toContain("width: 400px");
+    expect(out).toContain("height: 300px");
+  });
+
+  it("container parent has a definite px size (no width:100%/aspect-ratio) so it survives paste", () => {
+    const out = exportProject(makeProject());
+    expect(out).toContain("container-type: size");
+    expect(out).toContain("width: 400px");
+    expect(out).toContain("height: 300px");
+    expect(out).not.toContain("aspect-ratio");
+    expect(out).not.toContain("width: 100%;");
   });
 
   it("px mode emits px keyframes and a fixed-size parent", () => {

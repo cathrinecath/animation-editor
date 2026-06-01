@@ -73,10 +73,10 @@ export function keyframeStatements(project: Project): string[] {
 }
 
 /**
- * The `.animation-parent` rule. In container mode it is a size-container whose
- * height derives from its width via aspect-ratio (so cqw/cqh resolve and the
- * motion scales with the container). In px mode it is a fixed-size relative box.
- * `overflow: visible` so motion designed beyond the box still shows.
+ * The `.animation-parent` rule. In container mode it is a size-container with
+ * definite px dimensions (the design's container size) so cqw/cqh resolve and
+ * the export renders correctly anywhere on paste. In px mode it is a fixed-size
+ * relative box. `overflow: visible` so motion designed beyond the box still shows.
  */
 export function parentCss(project: Project): string {
   const anim = project.animations[0];
@@ -85,10 +85,13 @@ export function parentCss(project: Project): string {
   if (unit === "container") {
     return [
       `.${PARENT_CLASS} {`,
+      `  /* Sized to your design so it renders correctly anywhere on paste.`,
+      `     To fill the parent fluidly instead, set width:100% (the element`,
+      `     you place this in must have a definite width). */`,
       `  container-type: size;`,
       `  position: relative;`,
-      `  width: 100%;`,
-      `  aspect-ratio: ${width} / ${height};`,
+      `  width: ${width}px;`,
+      `  height: ${height}px;`,
       `  overflow: visible;`,
       `}`,
     ].join("\n");
