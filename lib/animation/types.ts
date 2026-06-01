@@ -21,6 +21,8 @@ export type Animation = {
   motionUnit: MotionUnit;
   input: AnimationInput;
   tracks: PropertyTrack[];
+  shake?: Shake;     // omitted ⇒ no shake
+  repeat: Repeat;    // always present; enabled:false ⇒ plays once
 };
 
 export type AnimationInput =
@@ -41,6 +43,34 @@ export type Waypoint = {
 
 export type Easing =
   | { type: "cubic-bezier"; control: [number, number, number, number] };
+
+export type Shake = {
+  amplitudeX: number;       // px, left/right
+  amplitudeY: number;       // px, up/down
+  amplitudeRotate: number;  // deg, wobble
+  frequency: number;        // oscillations across one play of the duration (>= 0)
+  decay: number;            // 0 = constant amplitude … 1 = fully settled by the end
+};
+
+export type Repeat = {
+  enabled: boolean;             // the On/Off toggle
+  mode: "loop" | "bounce";      // remembered even while enabled:false
+  times: number | "infinite";   // "infinite" = forever
+};
+
+export const DEFAULT_SHAKE: Shake = {
+  amplitudeX: 0,
+  amplitudeY: 0,
+  amplitudeRotate: 0,
+  frequency: 3,
+  decay: 0,
+};
+
+export const DEFAULT_REPEAT: Repeat = {
+  enabled: false,
+  mode: "loop",
+  times: "infinite",
+};
 
 /**
  * How exported motion is measured.
@@ -69,6 +99,7 @@ export const DEFAULT_PROJECT: Project = {
       elementId: "circle-1",
       motionUnit: "container",
       input: { type: "mount", delay: 0, duration: 1000 },
+      repeat: { enabled: false, mode: "loop", times: "infinite" },
       tracks: [
         {
           property: "translateX",

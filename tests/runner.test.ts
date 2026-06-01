@@ -32,6 +32,7 @@ function makeAnim(): Animation {
     elementId: "e",
     motionUnit: "px",
     input: { type: "mount", delay: 0, duration: 1000 },
+    repeat: { enabled: false, mode: "loop", times: "infinite" },
     tracks: [
       {
         property: "translateX",
