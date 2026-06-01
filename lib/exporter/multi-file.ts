@@ -3,9 +3,8 @@ import type { ExportFile } from "./index";
 import {
   ANIM_NAME,
   PARENT_CLASS,
-  durationSec,
-  easingString,
-  keyframeStatements,
+  animationShorthand,
+  keyframeBlock,
   parentCss,
 } from "./shared";
 
@@ -19,7 +18,7 @@ export function emitMultiFile(project: Project): ExportFile[] {
     return [{ name: "Animation.tsx", language: "tsx", code: "// no animation to export\n" }];
   }
 
-  const keyframes = keyframeStatements(project)
+  const keyframes = keyframeBlock(project)
     .map((s) => `  ${s}`)
     .join("\n");
 
@@ -30,7 +29,7 @@ ${keyframes}
 }
 
 .${ANIM_NAME} {
-  animation: ${ANIM_NAME} ${durationSec(project)}s ${easingString(project)} forwards;
+  animation: ${animationShorthand(project)};
 }
 `;
 

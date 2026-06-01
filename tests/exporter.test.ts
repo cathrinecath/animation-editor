@@ -168,3 +168,28 @@ describe("shake & repeat export helpers", () => {
     );
   });
 });
+
+describe("emitters honor shake & repeat", () => {
+  it("single-file: shake-off + repeat-off output is unchanged (clean cubic-bezier, no repeat)", () => {
+    const p = makePxProject();
+    const out = exportProject(p);
+    expect(out).toContain("cubic-bezier(0.42, 0, 0.58, 1) forwards");
+    expect(out).not.toContain("infinite");
+  });
+
+  it("single-file: shake-on bakes keyframes and uses linear", () => {
+    const p = makePxProject();
+    p.animations[0].shake = { amplitudeX: 8, amplitudeY: 0, amplitudeRotate: 0, frequency: 2, decay: 0 };
+    const out = exportProject(p);
+    expect(out).toContain("linear");
+    expect(out).toContain("100% { transform:");
+    expect(out).not.toContain("cubic-bezier");
+  });
+
+  it("multi-file: repeat-on emits infinite in the css", () => {
+    const p = makePxProject();
+    p.animations[0].repeat = { enabled: true, mode: "loop", times: "infinite" };
+    const css = exportFiles(p, "multi-file").find((f) => f.name === "animation.css")!.code;
+    expect(css).toContain("infinite");
+  });
+});

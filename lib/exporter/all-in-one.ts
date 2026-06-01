@@ -2,9 +2,8 @@ import type { Project } from "@/lib/animation/types";
 import {
   ANIM_NAME,
   PARENT_CLASS,
-  durationSec,
-  easingString,
-  keyframeStatements,
+  animationShorthand,
+  keyframeBlock,
   parentCss,
 } from "./shared";
 
@@ -12,7 +11,7 @@ export function emitAllInOne(project: Project): string {
   const anim = project.animations[0];
   if (!anim) return "// no animation to export\n";
 
-  const keyframes = keyframeStatements(project)
+  const keyframes = keyframeBlock(project)
     .map((s) => `          ${s}`)
     .join("\n");
   const parent = parentCss(project)
@@ -29,7 +28,7 @@ ${parent}
 ${keyframes}
         }
         .${ANIM_NAME} {
-          animation: ${ANIM_NAME} ${durationSec(project)}s ${easingString(project)} forwards;
+          animation: ${animationShorthand(project)};
         }
       \`}</style>
       <div className="${PARENT_CLASS}">
