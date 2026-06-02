@@ -34,7 +34,7 @@ export function EditorLayout() {
       </FloatingPanel>
 
       {/* right: motion */}
-      <FloatingPanel position="top-20 right-4 bottom-4" className="w-60 overflow-y-auto">
+      <FloatingPanel position="top-20 right-4 bottom-4" className="w-60 overflow-y-auto scrollbar-hide">
         <h2 className="mb-2 text-[10px] font-bold tracking-widest text-indigo-300">ANIMATION</h2>
         <AnimationInspector animationId="anim-1" />
       </FloatingPanel>

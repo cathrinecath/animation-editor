@@ -85,9 +85,6 @@ export function parentCss(project: Project): string {
   if (unit === "container") {
     return [
       `.${PARENT_CLASS} {`,
-      `  /* Sized to your design so it renders correctly anywhere on paste.`,
-      `     To fill the parent fluidly instead, set width:100% (the element`,
-      `     you place this in must have a definite width). */`,
       `  container-type: size;`,
       `  position: relative;`,
       `  width: ${width}px;`,

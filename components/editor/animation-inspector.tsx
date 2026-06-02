@@ -60,8 +60,6 @@ const SECTIONS: { key: string; title: string; render: (animationId: string) => R
   },
 ];
 
-const COMING_SOON = ["Stagger"];
-
 type AnimationInspectorProps = {
   animationId: string;
 };
@@ -73,17 +71,6 @@ export function AnimationInspector({ animationId }: AnimationInspectorProps) {
         <Section key={s.key} title={s.title} defaultOpen>
           {s.render(animationId)}
         </Section>
-      ))}
-      {COMING_SOON.map((label) => (
-        <div
-          key={label}
-          className="flex items-center justify-between border-t border-neutral-700 py-2.5 px-1 text-xs font-bold tracking-wide text-neutral-600"
-        >
-          <span>{label}</span>
-          <span className="rounded bg-neutral-700 px-1.5 py-0.5 text-[10px] text-neutral-400">
-            SOON
-          </span>
-        </div>
       ))}
     </div>
   );
