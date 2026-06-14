@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Brainstorming visual companion (local, not tracked)
 .superpowers/
+
+# Planning docs (local only, not tracked)
+docs/superpowers/
